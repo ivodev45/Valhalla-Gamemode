@@ -2268,6 +2268,7 @@ enum RentLokacije
 new RentInfo[MAX_RENTL][RentLokacije];
 new RentPickup[sizeof(RentInfo)];
 new Text3D:RentLabel[sizeof(RentInfo)];
+new RentLoc_CP[MAX_PLAYERS];
 
 forward UcitajRentLokacije(idrent, name[], value[]);
 public UcitajRentLokacije(idrent, name[], value[])
@@ -2300,6 +2301,21 @@ stock NextRentLocationID(const len) {
           id = ( provjera );
           break; } }
     return ( id );
+}
+
+stock GetNearestRentLocationID(playerid) {
+	new Float:playerPos[3];
+	GetPlayerPos(playerid, playerPos[0], playerPos[1], playerPos[2]);
+	new nearestRent = -1;
+	new Float:nearestDistance = 1000000.0;
+	for(new i = 0; i < MAX_RENTL; i++) {
+		new Float:distance = GetDistanceBetweenPoints3D(playerPos[0], playerPos[1], playerPos[2], RentInfo[i][rPosX], RentInfo[i][rPosY], RentInfo[i][rPosZ]);
+		if(distance < nearestDistance) {
+			nearestDistance = distance;
+			nearestRent = i;
+		}
+	}
+	return nearestRent;
 }
 
 //==================================[ POSAO DILER BY V01D ]============================================
@@ -26789,7 +26805,7 @@ LoadScriptfiles( ) {
     }
 
     if(ServerInfo[HappyHours]) {
-        SendRconCommand("hostname [EW] Evening Waves [ HappyHours ]");
+        SendRconCommand("hostname [V] Valhalla [ HappyHours ]");
     }
     
     if( fexist( "Ostalo/StariParovi.ini" ) ) {
@@ -31815,10 +31831,7 @@ public OnPlayerText( playerid, text[] ) {
         SendErrorMessage( playerid, "Ne mozete pricati, u paradoxu si.");
         return 0;
     }
-	// if( PlayerCuffed[ playerid ] >= 1 ) {
-	//     SendErrorMessage( playerid, "Ne mozes pricati kad si cuffovan ili tazovan.");
-	// 	return 0;
-	// }
+
 	if( PlayerInfo[ playerid ][ xAdmin ] < 1 && PlayerInfo[ playerid ][ xSupporter ] < 1 ) {
 	 	if( antiCheatCS[ playerid ][ SpamChat ] > 0) {
 		    SCM( playerid, SVETLOCRVENA, "| V:AC | Ne mozes spamati komande svakih 2 sec!");
@@ -33647,6 +33660,12 @@ public OnPlayerEnterCheckpoint( playerid ) {
 
         return 1;
     }
+
+	if(RentLoc_CP[playerid] == 1) {
+
+		RentLoc_CP[playerid] = 0;
+    	DisablePlayerCheckpoint(playerid);
+	}
 
     if(DeliveryCP[playerid] == 2) { //Legalna
 
@@ -35755,38 +35774,37 @@ public OnPlayerKeyStateChange( playerid, newkeys, oldkeys ) {
     //     else return SendErrorMessage(playerid, "Moras biti blizu organizacijskog vozila!");
     // }
 
-    // if(newkeys == KEY_FIRE && trainActive && trainArrived && !nosiTrainBox[playerid]) {
+    /*if(newkeys == KEY_FIRE && trainActive && trainArrived && !nosiTrainBox[playerid]) {
 
-    //     for(new i = 0; i < 6; i++) {
-    //         if(IsPlayerInRangeOfPoint(playerid, 2.0, trainBoxPos[i][0], trainBoxPos[i][1], trainBoxPos[i][2]) && activeTrainBox[i]) {
+    	for(new i = 0; i < 6; i++) {
+    		if(IsPlayerInRangeOfPoint(playerid, 2.0, trainBoxPos[i][0], trainBoxPos[i][1], trainBoxPos[i][2]) && activeTrainBox[i]) {
 
-    //             if(nosiTrainBox[playerid]) return 1;
+				if(nosiTrainBox[playerid]) return 1;
 
-    //             if(GetFactionType(playerid) != ORG_TIP_MAFIJA && GetFactionType(playerid) != ORG_TIP_BANDA) 
-    //                 return SendErrorMessage(playerid, "Samo mafija/banda!");
+   				if(GetFactionType(playerid) != ORG_TIP_MAFIJA && GetFactionType(playerid) != ORG_TIP_BANDA) return SendErrorMessage(playerid, "Samo mafija/banda!");
 
-    //             if(IsPlayerAttachedObjectSlotUsed(playerid, OBJECT_SLOT_FREE))
-    //                 RemovePlayerAttachedObject(playerid, OBJECT_SLOT_FREE);
-    //             SetPlayerAttachedObject(playerid, OBJECT_SLOT_FREE, 1271, 17, 0.215000, 0.537000, 0.000000, 1.799999, -1.400000, -17.800001, 1.000000, 1.000000, 1.000000);
+    			if(IsPlayerAttachedObjectSlotUsed(playerid, OBJECT_SLOT_FREE))
+   					RemovePlayerAttachedObject(playerid, OBJECT_SLOT_FREE);
+    			SetPlayerAttachedObject(playerid, OBJECT_SLOT_FREE, 1271, 17, 0.215000, 0.537000, 0.000000, 1.799999, -1.400000, -17.800001, 1.000000, 1.000000, 1.000000);
 
-    //             SetPlayerSpecialAction(playerid, SPECIAL_ACTION_CARRY);
+				SetPlayerSpecialAction(playerid, SPECIAL_ACTION_CARRY);
 
-    //             if(IsValidDynamicObject(trainObjects[i]))
-    //                 DestroyDynamicObject(trainObjects[i]);
+				if(IsValidDynamicObject(trainObjects[i]))
+					DestroyDynamicObject(trainObjects[i]);
 
-    //             if(IsValidDynamic3DTextLabel(trainBoxLabel[i]))
-    //                 DestroyDynamic3DTextLabel(trainBoxLabel[i]);
+				if(IsValidDynamic3DTextLabel(trainBoxLabel[i]))
+					DestroyDynamic3DTextLabel(trainBoxLabel[i]);
 
-    //             nosiTrainBox[playerid] = true;
+				nosiTrainBox[playerid] = true;
 
-    //             activeTrainBox[i] = false;
+				activeTrainBox[i] = false;
 
-    //             SendInfoMessage(playerid, "Uspesno si pokupio kutiju, koristi levi klik misa da je ostavis u org vozilo!");
+				SendInfoMessage(playerid, "Uspesno si pokupio kutiju, koristi levi klik misa da je ostavis u org vozilo!");
 
-    //             return 1;
-    //         }
-    //     }
-    // }
+   				return 1;
+   		    }	
+		}
+    }*/
 
     if(newkeys == KEY_SPRINT && PubgSkace[playerid] && PubgPokrenut) {
 
@@ -72312,6 +72330,16 @@ CMD:unrent(playerid, params[])
 	return 1;
 }
 
+CMD:najblizirent(playerid, params[]) {
+	new nearestRent = GetNearestRentLocationID(playerid);
+	if(nearestRent != -1) {
+		SetPlayerCheckpoint(playerid, RentInfo[nearestRent][rPosX], RentInfo[nearestRent][rPosY], RentInfo[nearestRent][rPosZ], 3.0);
+		RentLoc_CP[playerid] = 1;
+		SendInfoMessage(playerid, "Najbliza rent lokacija vam je oznacena na mapi!");
+	}
+	return 1;
+}
+
 CMD:fly(playerid, params[])
 {
 	if(PlayerInfo[playerid][xAdmin] < 5) return SendErrorMessage(playerid, "Nisi ovlascen!");
@@ -86392,38 +86420,31 @@ CMD:teritorije(playerid) {
     return 1;
 }
 
-// CMD:istovarikutije(playerid) {
+/*CMD:istovarikutije(playerid) {
 
-//     if(PlayerInfo[playerid][xClan] == 0)
-//         return SendErrorMessage(playerid, "Samo clanovi organizacije!");
+	if(PlayerInfo[playerid][xClan] == 0) return SendErrorMessage(playerid, "Samo clanovi organizacije!");
 
-//     new orgID = PlayerInfo[playerid][xClan];
+	new orgID = PlayerInfo[playerid][xClan];
 
-//     if(!IsPlayerInRangeOfPoint(playerid, 40.0, OI[ orgID ][ oPozExtX], OI[ orgID ][ oPozExtY], OI[ orgID ][ oPozExtZ ] ))
-//         return SendErrorMessage(playerid, "Moras biti blizu svoje organizacije!");
+	if(!IsPlayerInRangeOfPoint(playerid, 40.0, OI[ orgID ][ oPozExtX], OI[ orgID ][ oPozExtY], OI[ orgID ][ oPozExtZ ] )) return SendErrorMessage(playerid, "Moras biti blizu svoje organizacije!");
 
-//     if(!IsPlayerInAnyVehicle(playerid))
-//         return SendErrorMessage(playerid, "Nisi u vozilu!");
+	if(!IsPlayerInAnyVehicle(playerid)) return SendErrorMessage(playerid, "Nisi u vozilu!");
 
-//     new veh = GetPlayerVehicleID(playerid);
+	new veh = GetPlayerVehicleID(playerid);
 
-//     if( TipVozila[ veh ] != ORGANIZACIJSKO_VOZILO ) 
-//         return SendErrorMessage(playerid, "Ovo nije organizacijsko vozilo!");
+	if( TipVozila[ veh ] != ORGANIZACIJSKO_VOZILO )	return SendErrorMessage(playerid, "Ovo nije organizacijsko vozilo!");
 
 
-//     if( OrgaVozila[ veh ] != PlayerInfo[ playerid ][ xClan ]) 
-//         return SendErrorMessage(playerid, "Ovo nije vozilo tvoje organizacije!");
+	if( OrgaVozila[ veh ] != PlayerInfo[ playerid ][ xClan ]) return SendErrorMessage(playerid, "Ovo nije vozilo tvoje organizacije!");
            
-//     if(vehBrojKutija[veh] == 0)
-//         return SendErrorMessage(playerid, "Niste utovarili kutije sa voza u ovo vozilo!");
+	if(vehBrojKutija[veh] == 0) return SendErrorMessage(playerid, "Niste utovarili kutije sa voza u ovo vozilo!");
 
-//     giveTrainAward(playerid, vehBrojKutija[veh]);
-//     vehBrojKutija[veh] = 0;
+	giveTrainAward(playerid, vehBrojKutija[veh]);
+	vehBrojKutija[veh] = 0;
+	SendInfoMessage(playerid, "Uspesno si dostavio kutije u svoju organizaciju!");
 
-//     SendInfoMessage(playerid, "Uspesno si dostavio kutije u svoju organizaciju!");
-
-//     return 1;
-// }
+	return 1;
+}*/
 
 createTrainObjects() {
 
